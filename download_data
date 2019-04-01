@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+mkdir downloads
+
+wget -O downloads/dataset_getting_started.ipynb -L https://pitt.box.com/shared/static/ub5b0qnm7lg962bspj84u5b2cc4m7o6l.ipynb
+
+wget -O downloads/UKBOSS_best_ukwide_v5_2-02jun2015-match.fits -L https://pitt.box.com/shared/static/ey6mv90k3kreet9huqw0scdxowb8vxn2.fits
+
+wget -O downloads/decals-dr7.1-UKBOSS_best_ukwide_v5_2-02jun2015-match.fits -L https://pitt.box.com/shared/static/l7a21wp586m8p5ld6y3kv1y1xfultvsr.fits
