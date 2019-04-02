@@ -19,4 +19,4 @@ cd margaret
 In words:
 - clone git repository
 - enter repository
-- download data into `downloads/` directory (which is ignored in the `.gitignore`)
+- download the data provided by Rongpu into the `downloads/` directory (which is ignored by `.gitignore`)
