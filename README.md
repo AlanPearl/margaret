@@ -7,3 +7,9 @@ Etymology: Margaret, from the name of a legendary third century saint, borrowed 
 - Alan Pearl
 - David Setton
 - Yike Zhang
+
+## Installation Instructions
+
+```git clone https://github.com/AlanPearl/margaret
+cd margaret
+./download_data```
