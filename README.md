@@ -15,3 +15,8 @@ git clone https://github.com/AlanPearl/margaret
 cd margaret
 ./download_data
 ```
+
+In words:
+- clone git repository
+- enter repository
+- download data into `downloads/` directory (which is ignored in the `.gitignore`)
