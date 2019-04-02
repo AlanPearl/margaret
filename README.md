@@ -10,6 +10,8 @@ Etymology: Margaret, from the name of a legendary third century saint, borrowed 
 
 ## Installation Instructions
 
-```git clone https://github.com/AlanPearl/margaret
+```
+git clone https://github.com/AlanPearl/margaret
 cd margaret
-./download_data```
+./download_data
+```
