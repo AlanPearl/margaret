@@ -4,6 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from astropy.table import Table
 
+MARGPATH = os.path.abspath(os.path.join(__file__, "..", ".."))
+DOWNLOADS = os.path.join(MARGPATH, "downloads")
+
 
 def importdata():
     """Read in the data from decals and mgc catalogs and do manipulations on them to get them to a usable form.
@@ -21,8 +24,11 @@ def importdata():
 
     Return this catalog."""
 
-    decals_loc = '../downloads/decals-dr7.1-UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
-    mgc_loc = '../downloads/UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
+    decals_filename = 'decals-dr7.1-UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
+    mgc_filename = 'UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
+    
+    decals_loc = os.path.join(DOWNLOADS, decals_filename)
+    mgc_loc = os.path.join(DOWNLOADS, mgc_filename)
 
     # DECaLS catalog
     decals = Table.read(decals_loc)
