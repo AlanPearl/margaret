@@ -154,13 +154,13 @@ Usage Example for Redshift Analysis
         p = f"{target_label}_{{\\rm predicted}}"
         frac_label = "f_{\\rm outlier}"
         ax.set_xlabel(f"${t}$", fontsize=fontsize)
-        ax.set_title(f"${spread_label}={spread:.3e}$\n${frac_label}={outlier_frac:.3e}$")
+        ax.set_title(f"${spread_label}={spread:.3e}$\n${frac_label}={outlier_frac:.3e}$", fontsize=fontsize)
         if not f_label is None:
-            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{{f_label(t)}}}$", fontsize=1.5*fontsize)
+            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{{f_label(t)}}}$", fontsize=1.3*fontsize)
         elif self.scale_as is None:
             ax.set_ylabel(f"${p}-{t}$", fontsize=fontsize)
         else:
-            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{f({t})}}$", fontsize=1.5*fontsize)
+            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{f({t})}}$", fontsize=1.3*fontsize)
     
 
     def _choose_spread_estimator(self, spread_estimator):
