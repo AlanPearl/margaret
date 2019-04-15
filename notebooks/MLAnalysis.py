@@ -104,7 +104,8 @@ Usage Example for Redshift Analysis
     
     def plot_residuals(self, target_label="x", f_label=None, 
                        outlier_sigmas=3, spread_estimator="nmad", 
-                       color=["b","r"], ax=None, **scatter_kwargs):
+                       color=["b","r"], ax=None, fontsize=14, 
+                       **scatter_kwargs):
         """
         Make a plot of the residuals, distinguishing clearly between residuals which are outliers and those which are not. By default, an outlier is defined by having a residual of magnitude greater than :math:`3\\sigma_{\\rm NMAD}`.
         
@@ -152,14 +153,14 @@ Usage Example for Redshift Analysis
         t = f"{target_label}_{{\\rm truth}}"
         p = f"{target_label}_{{\\rm predicted}}"
         frac_label = "f_{\\rm outlier}"
-        ax.set_xlabel(f"${t}$", fontsize=14)
+        ax.set_xlabel(f"${t}$", fontsize=fontsize)
         ax.set_title(f"${spread_label}={spread:.3e}$\n${frac_label}={outlier_frac:.3e}$")
         if not f_label is None:
-            ax.set_ylabel(f"$({p}-{t})/{f_label(t)}$", fontsize=14)
+            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{{f_label(t)}}}$", fontsize=fontsize)
         elif self.scale_as is None:
-            ax.set_ylabel(f"${p}-{t}$", fontsize=14)
+            ax.set_ylabel(f"${p}-{t}$", fontsize=fontsize)
         else:
-            ax.set_ylabel(f"${{\\rm res}}({p}-{t})$", fontsize=14)
+            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{f({t})}}$", fontsize=fontsize)
     
 
     def _choose_spread_estimator(self, spread_estimator):
