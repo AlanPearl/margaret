@@ -86,10 +86,12 @@ def importdata(data_slice=slice(None)):
     mask = (decals['NOBS_G'] >= 2) & (decals['NOBS_R'] >= 2) & (decals['NOBS_Z'] >= 2)
     decals = decals[mask]
     mgc = mgc[mask]
-
+    
+    x = decals['rmag']-decals['zmag']
+    y = decals['rmag']-decals['w1mag']
     # Require valid grzW1W2 photometry and remove stars (log10(z)<-2)
     mask = np.isfinite(decals['gmag']) & np.isfinite(decals['rmag']) & np.isfinite(decals['zmag']) & \
-            np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag']) & (np.log10(mgc['ZBEST'])>-2)
+            np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag']) & (y>2.5*x-2.5)
     decals = decals[mask]
     mgc = mgc[mask]
 
