@@ -87,9 +87,9 @@ def importdata(data_slice=slice(None)):
     decals = decals[mask]
     mgc = mgc[mask]
 
-    # Require valid grzW1W2 photometry
+    # Require valid grzW1W2 photometry and remove stars (log10(z)<-2)
     mask = np.isfinite(decals['gmag']) & np.isfinite(decals['rmag']) & np.isfinite(decals['zmag']) & \
-            np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag'])
+            np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag']) & (mgc['ZBEST']>-2)
     decals = decals[mask]
     mgc = mgc[mask]
 
