@@ -4,8 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from astropy.table import Table
 
+MARGPATH = os.path.abspath(os.path.join(__file__, "..", ".."))
+DOWNLOADS = os.path.join(MARGPATH, "downloads")
 
-def importdata():
+
+def importdata(data_slice=slice(None)):
     """Read in the data from decals and mgc catalogs and do manipulations on them to get them to a usable form.
 
     In particular, grab the chi^2 values for exponential and de Vocoleur models of the galaxies.
@@ -21,13 +24,16 @@ def importdata():
 
     Return this catalog."""
 
-    decals_loc = '../downloads/decals-dr7.1-UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
-    mgc_loc = '../downloads/UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
+    decals_filename = 'decals-dr7.1-UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
+    mgc_filename = 'UKBOSS_best_ukwide_v5_2-02jun2015-match.fits'
+    
+    decals_loc = os.path.join(DOWNLOADS, decals_filename)
+    mgc_loc = os.path.join(DOWNLOADS, mgc_filename)
 
     # DECaLS catalog
-    decals = Table.read(decals_loc)
+    decals = Table.read(decals_loc)[data_slice]
     # matched best_ukwide catalog
-    mgc = Table.read(mgc_loc)
+    mgc = Table.read(mgc_loc)[data_slice]
 
     decals["DCHISQ_EXP"] = decals["DCHISQ"][:,2]
     decals["DCHISQ_DEV"] = decals["DCHISQ"][:,3]
@@ -55,15 +61,16 @@ def importdata():
 
     del decals["DCHISQ"]
 
-    decals['FLUX_G'] = decals['FLUX_G']/decals['MW_TRANSMISSION_G']
-    decals['FLUX_R'] = decals['FLUX_R']/decals['MW_TRANSMISSION_R']
-    decals['FLUX_Z'] = decals['FLUX_Z']/decals['MW_TRANSMISSION_Z']
-    decals['FLUX_W1'] = decals['FLUX_W1']/decals['MW_TRANSMISSION_W1']
-    decals['FLUX_W2'] = decals['FLUX_W2']/decals['MW_TRANSMISSION_W2']
-
     # Compute extinction-corrected magnitudes and errors for DECaLS
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
+        
+        decals['FLUX_G'] /= decals['MW_TRANSMISSION_G']
+        decals['FLUX_R'] /= decals['MW_TRANSMISSION_R']
+        decals['FLUX_Z'] /= decals['MW_TRANSMISSION_Z']
+        decals['FLUX_W1'] /= decals['MW_TRANSMISSION_W1']
+        decals['FLUX_W2'] /= decals['MW_TRANSMISSION_W2']
+        
         decals['gmag'] = 22.5 - 2.5*np.log10(decals['FLUX_G'])
         decals['rmag'] = 22.5 - 2.5*np.log10(decals['FLUX_R'])
         decals['zmag'] = 22.5 - 2.5*np.log10(decals['FLUX_Z'])
@@ -79,10 +86,12 @@ def importdata():
     mask = (decals['NOBS_G'] >= 2) & (decals['NOBS_R'] >= 2) & (decals['NOBS_Z'] >= 2)
     decals = decals[mask]
     mgc = mgc[mask]
-
-    # Require valid grzW1W2 photometry
+    
+    x = decals['rmag']-decals['zmag']
+    y = decals['rmag']-decals['w1mag']
+    # Require valid grzW1W2 photometry and remove stars (log10(z)<-2)
     mask = np.isfinite(decals['gmag']) & np.isfinite(decals['rmag']) & np.isfinite(decals['zmag']) & \
-            np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag'])
+            np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag']) & (y>2.5*x-2.5)
     decals = decals[mask]
     mgc = mgc[mask]
 
