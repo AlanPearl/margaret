@@ -8,7 +8,7 @@ MARGPATH = os.path.abspath(os.path.join(__file__, "..", ".."))
 DOWNLOADS = os.path.join(MARGPATH, "downloads")
 
 
-def importdata():
+def importdata(data_slice=slice(None)):
     """Read in the data from decals and mgc catalogs and do manipulations on them to get them to a usable form.
 
     In particular, grab the chi^2 values for exponential and de Vocoleur models of the galaxies.
@@ -31,9 +31,9 @@ def importdata():
     mgc_loc = os.path.join(DOWNLOADS, mgc_filename)
 
     # DECaLS catalog
-    decals = Table.read(decals_loc)
+    decals = Table.read(decals_loc)[data_slice]
     # matched best_ukwide catalog
-    mgc = Table.read(mgc_loc)
+    mgc = Table.read(mgc_loc)[data_slice]
 
     decals["DCHISQ_EXP"] = decals["DCHISQ"][:,2]
     decals["DCHISQ_DEV"] = decals["DCHISQ"][:,3]
@@ -61,15 +61,16 @@ def importdata():
 
     del decals["DCHISQ"]
 
-    decals['FLUX_G'] = decals['FLUX_G']/decals['MW_TRANSMISSION_G']
-    decals['FLUX_R'] = decals['FLUX_R']/decals['MW_TRANSMISSION_R']
-    decals['FLUX_Z'] = decals['FLUX_Z']/decals['MW_TRANSMISSION_Z']
-    decals['FLUX_W1'] = decals['FLUX_W1']/decals['MW_TRANSMISSION_W1']
-    decals['FLUX_W2'] = decals['FLUX_W2']/decals['MW_TRANSMISSION_W2']
-
     # Compute extinction-corrected magnitudes and errors for DECaLS
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
+        
+        decals['FLUX_G'] /= decals['MW_TRANSMISSION_G']
+        decals['FLUX_R'] /= decals['MW_TRANSMISSION_R']
+        decals['FLUX_Z'] /= decals['MW_TRANSMISSION_Z']
+        decals['FLUX_W1'] /= decals['MW_TRANSMISSION_W1']
+        decals['FLUX_W2'] /= decals['MW_TRANSMISSION_W2']
+        
         decals['gmag'] = 22.5 - 2.5*np.log10(decals['FLUX_G'])
         decals['rmag'] = 22.5 - 2.5*np.log10(decals['FLUX_R'])
         decals['zmag'] = 22.5 - 2.5*np.log10(decals['FLUX_Z'])
