@@ -69,7 +69,7 @@ Usage Example for Redshift Analysis
             raise ValueError("`truth` and `prediction` must have same shape")
         self.res = (self.prediction - self.truth) 
         if not scale_as is None:
-            self.res /= self.scale_as(self.truth)
+            self.res /= self.scale_as(self.truth.copy())
     
     def nmad(self):
         """
@@ -97,15 +97,25 @@ Usage Example for Redshift Analysis
         spread_estimator : string (default = "nmad")
             Either "nmad" or "std" to specify the function to estimate the spread of the distribution of residuals
         """
+        n_out =  np.sum( self.is_outlier(outlier_sigmas, spread_estimator) )
+        return n_out / float(len(self.res))
+    
+    def is_outlier(self, outlier_sigmas=3, spread_estimator="nmad"):
+        """
+        Return a boolean mask which is True for the index of each outlier
+        
+        Parameters
+        ----------
+        See parameters of `outlier_frac()`
+        """
         spread_estimator = self._choose_spread_estimator(spread_estimator)
         spread = spread_estimator()
-        n_out =  np.sum( np.abs(self.res) > (outlier_sigmas*spread) )
-        return n_out / float(len(self.res))
+        return np.abs(self.res) > (outlier_sigmas*spread)
     
     def plot_residuals(self, target_label="x", f_label=None, 
                        outlier_sigmas=3, spread_estimator="nmad", 
                        color=["b","r"], ax=None, fontsize=14, 
-                       **scatter_kwargs):
+                       res=True, **scatter_kwargs):
         """
         Make a plot of the residuals, distinguishing clearly between residuals which are outliers and those which are not. By default, an outlier is defined by having a residual of magnitude greater than :math:`3\\sigma_{\\rm NMAD}`.
         
@@ -128,6 +138,15 @@ Usage Example for Redshift Analysis
         
         ax : matplotlib.Axes object (default = plt.gca())
             Axis on which to draw this plot. By default, use the most recently updated axis or create a new one if none are available.
+        
+        fontsize : float, int (default = 14)
+            Font size for labels and title
+        
+        res : boolean (default = True)
+            If True, plot scaled residual vs. truth. If False, plot prediction vs. truth
+        
+        **scatter_kwargs : various types (default = {s=1, alpha=0.1})
+            Additional keyword arguments will be stored and given to plt.scatter()
         """
         spread_label = self._choose_spread_label(spread_estimator)
         spread_estimator = self._choose_spread_estimator(spread_estimator)
@@ -140,27 +159,40 @@ Usage Example for Redshift Analysis
         
         scatter_kwargs["s"] = scatter_kwargs.get("s", 1)
         scatter_kwargs["alpha"] = scatter_kwargs.get("alpha", .1)
-
         
-        ax.scatter(self.truth[~is_outlier], self.res[~is_outlier], 
+        y = self.res if res else self.prediction
+        ax.scatter(self.truth[~is_outlier], y[~is_outlier], 
                     color=color[0], **scatter_kwargs)
-        ax.scatter(self.truth[is_outlier], self.res[is_outlier],
+        ax.scatter(self.truth[is_outlier], y[is_outlier],
                     color=color[1], **scatter_kwargs)
         
-        ax.axhline(outlier_sigmas * spread, color="k", ls="--")
-        ax.axhline(- outlier_sigmas * spread, color="k", ls="--")
+        if res:
+            ax.axhline(outlier_sigmas * spread, color="k", ls="--")
+            ax.axhline(- outlier_sigmas * spread, color="k", ls="--")
+        else:
+            x = np.linspace(self.truth.min(), self.truth.max(), 1000)
+            scaling = 1 if self.scale_as is None else self.scale_as(x.copy())
+            upperlim = x + outlier_sigmas * spread * scaling
+            lowerlim = x - outlier_sigmas * spread * scaling
+            ax.plot(x,upperlim,"k--")
+            ax.plot(x,lowerlim,"k--")
+            ax.set_ylim(ax.get_xlim(), auto=True)
+            
+        
         
         t = f"{target_label}_{{\\rm truth}}"
         p = f"{target_label}_{{\\rm predicted}}"
-        frac_label = "f_{\\rm outlier}"
         ax.set_xlabel(f"${t}$", fontsize=fontsize)
-        ax.set_title(f"${spread_label}={spread:.3e}$\n${frac_label}={outlier_frac:.3e}$", fontsize=fontsize)
-        if not f_label is None:
-            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{{f_label(t)}}}$", fontsize=1.3*fontsize)
-        elif self.scale_as is None:
-            ax.set_ylabel(f"${p}-{t}$", fontsize=fontsize)
+        ax.set_title(f"${spread_label}=${spread:.3e}\n$3\\sigma$ outliers$=${outlier_frac*100:.3f}%", fontsize=fontsize)
+        if not res:
+            ax.set_ylabel(f"${p}$", fontsize=fontsize)
         else:
-            ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{f({t})}}$", fontsize=1.3*fontsize)
+            if not f_label is None:
+                ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{{f_label(t)}}}$", fontsize=1.3*fontsize)
+            elif self.scale_as is None:
+                ax.set_ylabel(f"${p}-{t}$", fontsize=fontsize)
+            else:
+                ax.set_ylabel(f"$\\frac{{({p}-{t})}}{{f({t})}}$", fontsize=1.3*fontsize)
     
 
     def _choose_spread_estimator(self, spread_estimator):
