@@ -64,13 +64,17 @@ def importdata(data_slice=slice(None)):
     p[mask_chisq] = decals['DCHISQ_DEV'][mask_chisq]/(decals['DCHISQ_DEV']+decals['DCHISQ_EXP'])[mask_chisq]
     
     prob_exp = np.ones(len(decals)) * 0.5
-    prob_exp[mask_chisq] = np.exp( -0.5 * decals["DCHISQ_EXP"][mask_chisq] )
-    prob_exp[mask_chisq] /= (prob_exp[mask_chisq] + 
-            np.exp( -0.5 * decals["DCHISQ_DEV"][mask_chisq] ))
+    logprob_exp = np.log(prob_exp)
+    logprob_exp[mask_chisq] = -0.5 * decals["DCHISQ_EXP"][mask_chisq] - np.logaddexp(
+                              -0.5 * decals["DCHISQ_EXP"][mask_chisq],
+                              -0.5 * decals["DCHISQ_DEV"][mask_chisq])
+    
+    prob_exp[mask_chisq] = np.exp(logprob_exp[mask_chisq])
 
     decals['axis_ratio'] = q
     decals['p_exp'] = p
     decals['prob_exp'] = prob_exp
+    decals['logprob_exp'] = logprob_exp
 
 
     # Compute extinction-corrected magnitudes and errors for DECaLS
