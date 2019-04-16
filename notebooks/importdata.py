@@ -37,6 +37,13 @@ def importdata(data_slice=slice(None)):
 
     decals["DCHISQ_EXP"] = decals["DCHISQ"][:,2]
     decals["DCHISQ_DEV"] = decals["DCHISQ"][:,3]
+    
+    absmagbest = mgc['ABSMAG_BEST']
+    del mgc["ABSMAG_BEST"]
+    del decals["DCHISQ"]
+    
+    decals = decals.to_pandas()
+    mgc = mgc.to_pandas()
 
     # calculate parameters for the axis ratio and the probability of being a disk or elliptical
     e = np.zeros(len(decals)) # the e parameter is zero for circularly symmetric profiles (PSF and SIMP)
@@ -55,11 +62,16 @@ def importdata(data_slice=slice(None)):
     # DCHISQ[:, 2] is DCHISQ_EXP; DCHISQ[:, 3] is DCHISQ_DEV
     mask_chisq = (decals['DCHISQ_DEV']>0) & (decals['DCHISQ_EXP']>0)
     p[mask_chisq] = decals['DCHISQ_DEV'][mask_chisq]/(decals['DCHISQ_DEV']+decals['DCHISQ_EXP'])[mask_chisq]
+    
+    prob_exp = np.ones(len(decals)) * 0.5
+    prob_exp[mask_chisq] = np.exp( -0.5 * decals["DCHISQ_EXP"][mask_chisq] )
+    prob_exp[mask_chisq] /= (prob_exp[mask_chisq] + 
+            np.exp( -0.5 * decals["DCHISQ_DEV"][mask_chisq] ))
 
     decals['axis_ratio'] = q
     decals['p_exp'] = p
+    decals['prob_exp'] = prob_exp
 
-    del decals["DCHISQ"]
 
     # Compute extinction-corrected magnitudes and errors for DECaLS
     with warnings.catch_warnings():
@@ -101,10 +113,7 @@ def importdata(data_slice=slice(None)):
     decals['zminw1'] = decals['zmag']-decals['w1mag']
     decals['w1minw2'] = decals['w1mag']-decals['w2mag']
 
-    absmagbest = mgc['ABSMAG_BEST']
-    del mgc["ABSMAG_BEST"]
-
-    catalog = decals.copy()
+    catalog = decals
 
     catalog['redshift'] = mgc['ZBEST']
     catalog['redshift_err'] = mgc['SIGMAZ_BEST']
@@ -118,7 +127,5 @@ def importdata(data_slice=slice(None)):
     # delete the unimportant columns
     del catalog["BRICKID"]
     del catalog["BRICKNAME"]
-
-    catalog = catalog.to_pandas()
 
     return catalog
