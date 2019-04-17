@@ -25,21 +25,25 @@ from xgboost import XGBRegressor
 class Regressors:
     """
     This class includs several machine learning regression methods which are
-    random forest, k nearest neighbors (both uniform and distance weighted)
+    random forest, k nearest neighbors, gradient boosting and xgboost
     to train and predict data.
 
     Example:
 
     # data_X and data_Y are training input and target data.
     reg = Regressor(data_X, data_Y)
-    data_predict, data_test = reg.RFregressor()
-    data_predict, data_test = reg.KNNregressor()
-    data_predict, data_test = reg.KNN_dregressor()
+    data_predict, data_test = reg.RFregressor(**kwargs)
+    data_predict, data_test = reg.KNNregressor(**kwargs)
+    data_predict, data_test = reg.KNN_dregressor(**kwargs)
+    data_predict, data_test = reg.GBregressor(**kwargs)
+    data_predict, data_test = reg.Xgboostregressor(**kwargs)
 
     # or use cross validation
     data_predict, data_test = reg.RFregressor(cross_validation=True)
     data_predict, data_test = reg.KNNregressor(cross_validation=True)
     data_predict, data_test = reg.KNN_dregressor(cross_validation=True)
+    data_predict, data_test = reg.GBregressor(cross_validation=True)
+    data_predict, data_test = reg.Xgboostregressor(cross_validation=True)
 
     """
 
