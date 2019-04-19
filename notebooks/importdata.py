@@ -1,4 +1,4 @@
-import os, sys, warnings
+import os, warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +8,7 @@ MARGPATH = os.path.abspath(os.path.join(__file__, "..", ".."))
 DOWNLOADS = os.path.join(MARGPATH, "downloads")
 
 
-def importdata(data_slice=slice(None)):
+def importdata(data_slice=slice(None), mask_stars=True, mask_rad30=False, mask_chisq0=False):
     """Read in the data from decals and mgc catalogs and do manipulations on them to get them to a usable form.
 
     In particular, grab the chi^2 values for exponential and de Vocoleur models of the galaxies.
@@ -107,13 +107,14 @@ def importdata(data_slice=slice(None)):
     decals = decals[mask]
     mgc = mgc[mask]
     
-    x = decals['rmag']-decals['zmag']
-    y = decals['rmag']-decals['w1mag']
-    # Require valid grzW1W2 photometry and remove stars (log10(z)<-2)
-    mask = np.isfinite(decals['gmag']) & np.isfinite(decals['rmag']) & np.isfinite(decals['zmag']) & \
-            np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag']) & (y>2.5*x-2.5)
-    decals = decals[mask]
-    mgc = mgc[mask]
+    if mask_stars:
+        x = decals['rmag']-decals['zmag']
+        y = decals['rmag']-decals['w1mag']
+        # Require valid grzW1W2 photometry and remove stars (log10(z)<-2)
+        mask = np.isfinite(decals['gmag']) & np.isfinite(decals['rmag']) & np.isfinite(decals['zmag']) & \
+                np.isfinite(decals['w1mag']) & np.isfinite(decals['w2mag']) & (y>2.5*x-2.5)
+        decals = decals[mask]
+        mgc = mgc[mask]
 
     # Calculate g-r, r-z, z-w1, w1-w2 color
     decals['gminr'] = decals['gmag']-decals['rmag']
@@ -135,5 +136,10 @@ def importdata(data_slice=slice(None)):
     # delete the unimportant columns
     del catalog["BRICKID"]
     del catalog["BRICKNAME"]
+
+    if mask_chisq0:
+        catalog = catalog[mask_chisq]
+    if mask_rad30:
+        catalog = catalog[catalog.radius<30]
 
     return catalog

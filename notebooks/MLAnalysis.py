@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
+import sklearn.metrics
 
 class RegressionAnalyzer:
     """
@@ -37,7 +38,8 @@ Usage Example for Redshift Analysis
 >>> f = lambda z: z + 1  # optional
 >>> 
 >>> analysis = MLAnalysis.RegressionAnalyzer(z_predict, z_true, scale_as=f)
->>> # statistics can be accessed via:
+>>> # Several scoring metrics can be accessed via:
+>>> #           - analysis.r2()
 >>> #           - analysis.nmad()
 >>> #           - analysis.std()
 >>> #           - analysis.outlier_frac()
@@ -66,7 +68,7 @@ Usage Example for Redshift Analysis
         self.prediction = np.asarray(prediction)
         self.truth = np.asarray(truth)
         if truth.shape != prediction.shape:
-            raise ValueError("`truth` and `prediction` must have same shape")
+            raise ValueError("`truth` and `prediction` must have same length")
         self.res = (self.prediction - self.truth) 
         if not scale_as is None:
             self.res /= self.scale_as(self.truth.copy())
@@ -84,6 +86,12 @@ Usage Example for Redshift Analysis
         Return the standard deviation, :math:`\\sigma`, of the residuals
         """
         return np.std(self.res, ddof=1)
+    
+    def r2(self):
+        """
+        Return the R^2 score of the prediction vs. truth
+        """
+        return sklearn.metrics.r2_score(self.truth, self.prediction)
     
     def outlier_frac(self, outlier_sigmas=3, spread_estimator="nmad"):
         """
@@ -183,7 +191,7 @@ Usage Example for Redshift Analysis
         t = f"{target_label}_{{\\rm truth}}"
         p = f"{target_label}_{{\\rm predicted}}"
         ax.set_xlabel(f"${t}$", fontsize=fontsize)
-        ax.set_title(f"${spread_label}=${spread:.3e}\n$3\\sigma$ outliers$=${outlier_frac*100:.3f}%", fontsize=fontsize)
+        ax.set_title(f"${spread_label}=${spread:.3e}\n$3\\sigma$ outliers$=${outlier_frac*100:.3f}%\n$R^2=${self.r2():.4f}", fontsize=fontsize)
         if not res:
             ax.set_ylabel(f"${p}$", fontsize=fontsize)
         else:

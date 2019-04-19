@@ -19,6 +19,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_validate
+from sklearn.decomposition import PCA
 from xgboost import XGBRegressor
 
 
@@ -47,7 +48,8 @@ class Regressors:
 
     """
 
-    def __init__(self, data_X, data_Y, train_size=0.5, test_size=0.5):
+    def __init__(self, data_X, data_Y, train_size=0.5, test_size=0.5, 
+                 random_state=None, apply_pca=False):
         """
         Args:
             data_X: array-like or matrix of shape=[n_samples, n_features]
@@ -58,7 +60,12 @@ class Regressors:
                 Train test split ratio (if not using cross_validation)
             test_size: float
                 Train test split ratio (if not using cross_validation)
-
+            random_state: int
+                Random seed from which to split the test and training sample
+            apply_pca: bool
+                If true, the training features will first be decomposed by PCA
+                before they are used to train the regressor. PCA uses no
+                information from the testing features
         """
         self._X = data_X
         self._Y = data_Y
@@ -70,9 +77,17 @@ class Regressors:
 
         # Train-test split
         split = train_test_split(self._X, self._Y, self._scaled_X,
-                                 train_size=train_size, test_size=test_size)
-        self._Xtrain = split[0]
-        self._Xtest = split[1]
+                                 train_size=train_size, test_size=test_size,
+                                 random_state=random_state)
+        
+        # Apply principal component analysis
+        if apply_pca:
+            pca = PCA(n_components=self._X.shape[1])
+            self._Xtrain = pca.fit_transform(split[0])
+            self._Xtest = pca.transform(split[1])
+        else:
+            self._Xtrain = split[0]
+            self._Xtest = split[1]
         self._Ytrain = split[2]
         self._Ytest = split[3]
         self._scaled_Xtrain = split[4]
