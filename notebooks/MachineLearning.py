@@ -82,17 +82,26 @@ class Regressors:
         
         # Apply principal component analysis
         if apply_pca:
-            pca = PCA(n_components=self._X.shape[1])
+            ndim = self._X.shape[1]
+            self._X = PCA(n_components=ndim).fit_transform(self._X)
+            self._scaled_X = PCA(n_components=ndim).fit_transform(self._scaled_X)
+            
+            pca = PCA(n_components=ndim)
             self._Xtrain = pca.fit_transform(split[0])
             self._Xtest = pca.transform(split[1])
-            self._X = PCA(n_components=self._X.shape[1]).fit_transform(self._X)
+            
+            pca = PCA(n_components=ndim)
+            self._scaled_Xtrain = pca.fit_transform(split[4])
+            self._scaled_Xtest = pca.transform(split[5])
         else:
             self._Xtrain = split[0]
             self._Xtest = split[1]
+            self._scaled_Xtrain = split[4]
+            self._scaled_Xtest = split[5]
+        
         self._Ytrain = split[2]
         self._Ytest = split[3]
-        self._scaled_Xtrain = split[4]
-        self._scaled_Xtest = split[5]
+
 
     @staticmethod
     def Reg_scoring(Y_true, Y_pred):
