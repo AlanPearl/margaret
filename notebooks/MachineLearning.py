@@ -85,6 +85,7 @@ class Regressors:
             pca = PCA(n_components=self._X.shape[1])
             self._Xtrain = pca.fit_transform(split[0])
             self._Xtest = pca.transform(split[1])
+            self._X = PCA(n_components=self._X.shape[1]).fit_transform(self._X)
         else:
             self._Xtrain = split[0]
             self._Xtest = split[1]

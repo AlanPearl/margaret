@@ -1,7 +1,5 @@
 import os, warnings
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from astropy.table import Table
 
 MARGPATH = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -63,10 +61,10 @@ def importdata(data_slice=slice(None), mask_stars=True, mask_rad30=False, mask_c
     mask_chisq = (decals['DCHISQ_DEV']>0) & (decals['DCHISQ_EXP']>0)
     p[mask_chisq] = decals['DCHISQ_DEV'][mask_chisq]/(decals['DCHISQ_DEV']+decals['DCHISQ_EXP'])[mask_chisq]
     
-    prob_exp = np.ones(len(decals)) * 0.5
-    expscale = np.zeros(len(decals)) * 0.5
-    logprob_exp = np.log(prob_exp)
-    logprob_dev = np.log(prob_exp)
+    prob_exp = np.full(len(decals), 0.5)
+    logprob_exp = logprob_dev = np.full(len(decals), np.log(0.5))
+    expscale = np.zeros(len(decals))
+    
     log_sum = np.logaddexp(-0.5 * decals["DCHISQ_EXP"][mask_chisq],
                            -0.5 * decals["DCHISQ_DEV"][mask_chisq])
     logprob_exp[mask_chisq] = -0.5 * decals["DCHISQ_EXP"][mask_chisq] - log_sum
