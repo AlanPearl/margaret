@@ -62,7 +62,8 @@ def importdata(data_slice=slice(None), mask_stars=True, mask_rad30=False, mask_c
     p[mask_chisq] = decals['DCHISQ_DEV'][mask_chisq]/(decals['DCHISQ_DEV']+decals['DCHISQ_EXP'])[mask_chisq]
     
     prob_exp = np.full(len(decals), 0.5)
-    logprob_exp = logprob_dev = np.full(len(decals), np.log(0.5))
+    logprob_exp = np.full(len(decals), np.log(0.5))
+    logprob_dev = np.full(len(decals), np.log(0.5))
     expscale = np.zeros(len(decals))
     
     log_sum = np.logaddexp(-0.5 * decals["DCHISQ_EXP"][mask_chisq],
@@ -136,8 +137,9 @@ def importdata(data_slice=slice(None), mask_stars=True, mask_rad30=False, mask_c
     del catalog["BRICKNAME"]
 
     if mask_chisq0:
+        mask_chisq = (catalog['DCHISQ_DEV']>0) & (catalog['DCHISQ_EXP']>0)
         catalog = catalog[mask_chisq]
     if mask_rad30:
-        catalog = catalog[catalog.radius<30]
+        catalog = catalog[catalog.radius < 30]
 
     return catalog
